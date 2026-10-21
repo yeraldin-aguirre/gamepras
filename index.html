@@ -1,0 +1,265 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Calculadora de puja GAMEPRAS</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: panel de datos a la izquierda, veredicto grande a la derecha (una columna en celular) */
+:root{
+  --bg:#F3F6FC; --surface:#FFFFFF; --ink:#0B1A3A; --muted:#5A6788; --line:#D9E0EE;
+  --blue:#1E5BFF; --navy:#0B2A6F; --red:#E3122C;
+  --ok:#0E8A4F; --ok-bg:#E3F5EC; --warn:#B26A00; --warn-bg:#FFF3DC; --bad:#C0102A; --bad-bg:#FDE6EA;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#08112A; --surface:#0F1C3D; --ink:#EAF0FF; --muted:#9AA8CC; --line:#22345E;
+  --blue:#5B8CFF; --navy:#AFC6FF; --red:#FF4D63;
+  --ok:#43D08E; --ok-bg:#0E2E24; --warn:#FFB547; --warn-bg:#33270C; --bad:#FF6B7E; --bad-bg:#3A1220; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#08112A; --surface:#0F1C3D; --ink:#EAF0FF; --muted:#9AA8CC; --line:#22345E;
+  --blue:#5B8CFF; --navy:#AFC6FF; --red:#FF4D63;
+  --ok:#43D08E; --ok-bg:#0E2E24; --warn:#FFB547; --warn-bg:#33270C; --bad:#FF6B7E; --bad-bg:#3A1220; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1040px;margin:0 auto;display:grid;gap:20px}
+header{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;border-bottom:3px solid var(--navy);padding-bottom:10px}
+.brand{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:.04em;color:var(--navy);text-transform:uppercase;line-height:1}
+.brand b{color:var(--red)}
+header p{margin:0;color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}.result{order:-1}}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:16px}
+h2{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:420px){.row{grid-template-columns:minmax(0,1fr)}}
+label{display:grid;gap:5px;font-weight:600;font-size:14px}
+label small{font-weight:400;color:var(--muted);font-size:12.5px}
+input,select{font:inherit;font-variant-numeric:tabular-nums;width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+.money{position:relative}
+.money span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+.money input{padding-left:44px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-weight:600;font-size:14px;padding:10px 8px;border:0;background:var(--bg);color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--surface)}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{color:#08112A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .seg button[aria-pressed="true"]{color:#08112A}}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:600;color:var(--muted);font-size:14px}
+details .row{margin-top:12px}
+/* resultado */
+.result{position:sticky;top:12px}
+.verdict{border-radius:10px;padding:20px;background:var(--surface);border:1px solid var(--line);display:grid;gap:14px}
+.pill{justify-self:start;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.warn{background:var(--warn-bg);color:var(--warn)} .pill.bad{background:var(--bad-bg);color:var(--bad)}
+.big{display:grid;gap:2px}
+.big .lab{color:var(--muted);font-size:14px;font-weight:600}
+.big .num{font-family:var(--display);font-weight:700;font-size:64px;line-height:1;color:var(--navy);font-variant-numeric:tabular-nums}
+.big .num small{font-size:28px;color:var(--muted);margin-right:4px}
+.msg{margin:0;font-size:15px}
+.bar{display:grid;gap:6px}
+.track{position:relative;height:14px;border-radius:7px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.fill{position:absolute;inset:0 auto 0 0;background:var(--blue);border-radius:7px 0 0 7px;transition:width .2s}
+.fill.over{background:var(--red)}
+.barlab{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+dl{margin:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;font-size:14.5px;border-top:1px solid var(--line);padding-top:14px}
+dt{color:var(--muted)} dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+dd.pos{color:var(--ok)} dd.neg{color:var(--bad)}
+.why{font-size:13px;color:var(--muted);margin:0}
+.foot{color:var(--muted);font-size:12.5px;max-width:70ch}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">Game<b>pras</b> · Puja máxima</div>
+    <p>PS4 usadas en eBay → casillero Miami → Cali</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-label="Datos de la subasta">
+      <h2>La subasta</h2>
+      <div class="row">
+        <label>Modelo
+          <select id="model">
+            <option value="pro">PS4 Pro</option>
+            <option value="slim1">PS4 Slim 1TB</option>
+            <option value="slim5" selected>PS4 Slim 500GB</option>
+            <option value="fat">PS4 Fat 500GB</option>
+          </select>
+        </label>
+        <label>¿Trae control?
+          <div class="seg" role="group" aria-label="Trae control">
+            <button type="button" id="ctrlYes" aria-pressed="true">Sí</button>
+            <button type="button" id="ctrlNo" aria-pressed="false">No</button>
+          </div>
+        </label>
+      </div>
+      <div class="row">
+        <label>Puja actual
+          <div class="money"><span>US$</span><input id="bid" type="number" inputmode="decimal" min="0" step="0.01" value="68"></div>
+        </label>
+        <label>Envío del vendedor a Miami
+          <div class="money"><span>US$</span><input id="ship" type="number" inputmode="decimal" min="0" step="0.01" value="20"></div>
+        </label>
+      </div>
+
+      <h2>El despacho a Colombia</h2>
+      <div class="seg" role="group" aria-label="Tipo de despacho">
+        <button type="button" id="modeSolo" aria-pressed="false">Va sola</button>
+        <button type="button" id="modePair" aria-pressed="true">Juntar 2 consolas</button>
+      </div>
+      <div class="row" id="pairBox">
+        <label>Límite para esta consola
+          <div class="money"><span>US$</span><input id="limit" type="number" inputmode="decimal" min="0" step="1" value="100"></div>
+          <small>Precio + envío en EE. UU. Las dos juntas no pueden pasar de US$200.</small>
+        </label>
+        <label>¿Ya ganaste la otra?
+          <div class="money"><span>US$</span><input id="other" type="number" inputmode="decimal" min="0" step="0.01" placeholder="precio + envío"></div>
+          <small>Si la escribes, el límite pasa a ser US$200 menos ese valor.</small>
+        </label>
+      </div>
+
+      <h2>Tu negocio</h2>
+      <div class="row">
+        <label>Precio de reventa en Cali
+          <div class="money"><span>COP</span><input id="resale" type="number" inputmode="numeric" min="0" step="10000" value="700000"></div>
+          <small id="resaleHint">Tu precio con mantenimiento y juegos. Mediana vendida en Cali: $680.000</small>
+        </label>
+        <label>Margen que quieres
+          <select id="margin">
+            <option value="0.2">20%</option>
+            <option value="0.25">25%</option>
+            <option value="0.3" selected>30%</option>
+            <option value="0.4">40%</option>
+          </select>
+        </label>
+      </div>
+
+      <details>
+        <summary>Supuestos (tasa, impuestos, casillero)</summary>
+        <div class="row">
+          <label>Tasa COP por US$<input id="fx" type="number" inputmode="numeric" step="10" value="3450"></label>
+          <label>Colchón cambiario %<input id="buf" type="number" inputmode="decimal" step="0.5" value="5"></label>
+          <label>Impuesto Florida %<input id="tax" type="number" inputmode="decimal" step="0.1" value="7"></label>
+          <label>Casillero por envío
+            <div class="money"><span>US$</span><input id="box" type="number" inputmode="decimal" step="1" value="24"></div></label>
+          <label>Control extra si no trae
+            <div class="money"><span>COP</span><input id="ctrlCost" type="number" inputmode="numeric" step="5000" value="70000"></div></label>
+        </div>
+      </details>
+    </section>
+
+    <section class="result" aria-live="polite">
+      <div class="verdict">
+        <span class="pill ok" id="pill">Puedes pujar</span>
+        <div class="big">
+          <span class="lab">Lo máximo que puedes ofrecer</span>
+          <span class="num"><small>US$</small><span id="maxBid">80</span></span>
+        </div>
+        <p class="msg" id="msg"></p>
+        <div class="bar" id="barBox">
+          <div class="barlab"><span>Puja + envío: <b id="used">US$88</b></span><span id="limLab">Límite US$100</span></div>
+          <div class="track"><div class="fill" id="fill" style="width:88%"></div></div>
+        </div>
+        <dl>
+          <dt>Próxima puja mínima en eBay</dt><dd id="next">—</dd>
+          <dt>Techo por ganancia</dt><dd id="capMargin">—</dd>
+          <dt>Techo por límite de envío</dt><dd id="capLimit">—</dd>
+          <dt>Costo puesto en Cali (a la puja actual)</dt><dd id="landed">—</dd>
+          <dt>Ganancia estimada al revender</dt><dd id="profit">—</dd>
+        </dl>
+        <p class="why" id="why"></p>
+      </div>
+    </section>
+  </div>
+
+  <p class="foot">Cálculo: (puja + envío) × impuesto de Florida + casillero, convertido a pesos con la tasa y el colchón; si no trae control se suma el control extra. Con "Juntar 2 consolas" el casillero se divide entre las dos. La puja máxima no incluye el envío del vendedor. Precios de reventa por defecto: tus precios de venta con mantenimiento, cambio de pasta térmica y consola programada con juegos (Slim 500GB $700.000, Slim 1TB $800.000, Pro $950.000, Fat 500GB $600.000). Como referencia se muestra la mediana de PS4 vendidas en Marketplace Cali (revisiones del 5, 12 y 20 de octubre de 2026).</p>
+</div>
+
+<script>
+const MODELS={pro:{resale:950000,hint:"Tu precio con mantenimiento y juegos. Mediana vendida en Cali: $900.000"},
+  slim1:{resale:800000,hint:"Tu precio con mantenimiento y juegos. Mediana vendida en Cali: $730.000"},
+  slim5:{resale:700000,hint:"Tu precio con mantenimiento y juegos. Mediana vendida en Cali: $680.000"},
+  fat:{resale:600000,hint:"Tu precio con mantenimiento y juegos. Mediana vendida en Cali: $630.000"}};
+const $=id=>document.getElementById(id);
+const num=id=>{const v=parseFloat($(id).value);return isNaN(v)?0:v};
+const usd=v=>"US$"+(Math.round(v*100)/100).toLocaleString("es-CO",{minimumFractionDigits:v%1?2:0,maximumFractionDigits:2});
+const cop=v=>(v<0?"−$":"$")+Math.round(Math.abs(v)).toLocaleString("es-CO");
+let state={ctrl:true,pair:true};
+
+function inc(p){ if(p<1)return .05; if(p<5)return .25; if(p<25)return .5; if(p<100)return 1; if(p<250)return 2.5; return 5; }
+
+function calc(){
+  const resale=num("resale"), m=parseFloat($("margin").value), ship=num("ship"), bid=num("bid");
+  const fx=num("fx")*(1+num("buf")/100), tax=1+num("tax")/100;
+  const boxShare=state.pair?num("box")/2:num("box");
+  const ctrl=state.ctrl?0:num("ctrlCost");
+  const other=$("other").value===""?null:num("other");
+  let limit=state.pair?(other!==null?200-other:num("limit")):null;
+
+  const capMargin=Math.floor(((resale/(1+m)-ctrl)/fx-boxShare)/tax-ship);
+  const capLimit=limit!==null?Math.floor((limit-ship)*100)/100:null;
+  const maxBid=Math.max(0,capLimit!==null?Math.min(capMargin,capLimit):capMargin);
+  const binding=capLimit!==null&&capLimit<capMargin?"limit":"margin";
+
+  const landed=((bid+ship)*tax+boxShare)*fx+ctrl;
+  const profit=resale-landed, pct=landed>0?profit/landed:0;
+  const next=bid+inc(bid);
+
+  $("maxBid").textContent=maxBid.toLocaleString("es-CO",{maximumFractionDigits:2});
+  $("capMargin").textContent=usd(Math.max(0,capMargin));
+  $("capLimit").textContent=capLimit!==null?usd(Math.max(0,capLimit)):"No aplica (va sola)";
+  $("next").textContent=usd(next);
+  $("landed").textContent=cop(landed);
+  $("profit").textContent=cop(profit)+" ("+Math.round(pct*100)+"%)";
+  $("profit").className=profit>=0?"pos":"neg";
+
+  const pill=$("pill"), msg=$("msg");
+  if(bid>maxBid){
+    pill.className="pill bad"; pill.textContent="No subas más";
+    msg.textContent=binding==="limit"
+      ? "La puja actual ya pasa tu límite de envío. Si la ganas, esta consola no cabe con otra en el mismo despacho."
+      : "A este precio ya no te queda el margen que pediste.";
+  } else if(next>maxBid){
+    pill.className="pill warn"; pill.textContent="Al límite";
+    msg.textContent="Vas en el tope: la próxima puja mínima ("+usd(next)+") ya te pasa. Deja tu puja en "+usd(maxBid)+" y no subas.";
+  } else {
+    pill.className="pill ok"; pill.textContent="Puedes pujar";
+    msg.textContent="Puedes subir hasta "+usd(maxBid)+". Te quedan "+usd(maxBid-bid)+" de margen sobre la puja actual.";
+  }
+  $("why").textContent=binding==="limit"
+    ? "Te frena el límite de envío ("+usd(limit)+" con envío incluido), no la ganancia."
+    : "Te frena la ganancia que pediste ("+Math.round(m*100)+"%), no el límite de envío.";
+
+  const bb=$("barBox");
+  if(limit!==null){
+    bb.hidden=false;
+    const used=bid+ship;
+    $("used").textContent=usd(used);
+    $("limLab").textContent="Límite "+usd(limit)+(other!==null?" (200 − "+usd(other)+")":"");
+    const f=$("fill"); f.style.width=Math.min(100,limit>0?used/limit*100:100)+"%"; f.classList.toggle("over",used>limit);
+  } else bb.hidden=true;
+  save();
+}
+
+function setSeg(a,b,val){ $(a).setAttribute("aria-pressed",val); $(b).setAttribute("aria-pressed",!val); }
+$("ctrlYes").onclick=()=>{state.ctrl=true;setSeg("ctrlYes","ctrlNo",true);calc()};
+$("ctrlNo").onclick=()=>{state.ctrl=false;setSeg("ctrlYes","ctrlNo",false);calc()};
+$("modePair").onclick=()=>{state.pair=true;setSeg("modePair","modeSolo",true);$("pairBox").hidden=false;calc()};
+$("modeSolo").onclick=()=>{state.pair=false;setSeg("modePair","modeSolo",false);$("pairBox").hidden=true;calc()};
+$("model").onchange=()=>{const md=MODELS[$("model").value];$("resale").value=md.resale;$("resaleHint").textContent=md.hint;calc()};
+document.querySelectorAll("input,select").forEach(el=>el.addEventListener("input",calc));
+
+const KEY="gamepras-puja-v2", FIELDS=["model","bid","ship","limit","other","resale","margin","fx","buf","tax","box","ctrlCost"];
+function save(){try{const o={state};FIELDS.forEach(f=>o[f]=$(f).value);localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+function load(){try{const o=JSON.parse(localStorage.getItem(KEY)||"null");if(!o)return;
+  FIELDS.forEach(f=>{if(o[f]!==undefined)$(f).value=o[f]});
+  if(o.state){state=o.state;setSeg("ctrlYes","ctrlNo",state.ctrl);setSeg("modePair","modeSolo",state.pair);$("pairBox").hidden=!state.pair}
+  $("resaleHint").textContent=MODELS[$("model").value].hint;}catch(e){}}
+load(); calc();
+</script>
+
+</body></html>
